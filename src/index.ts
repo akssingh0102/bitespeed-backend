@@ -1,11 +1,15 @@
 import express from 'express';
 import routes from './routes';
 import prisma from './database';
+import errorHandler from './controllers/errorHandler';
+import notFoundHandler from './controllers/notFoundHandler';
 
 const app = express();
 app.use(express.json());
 
 app.use('/identify', routes);
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 const startServer = async () => {
     try {
