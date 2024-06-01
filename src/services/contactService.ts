@@ -32,7 +32,8 @@ export const identifyContact = async (email?: string, phoneNumber?: string) => {
         // Find the primary contact
         const primaryExistingContacts = existingContacts.filter(data => data.linkPrecedence === 'primary');
         console.log(`primaryExistingContacts: ${JSON.stringify(primaryExistingContacts)}`);
-        if (primaryExistingContacts.length > 1) {
+        const isMultiplePrimaryExistingContact = (primaryExistingContacts.length > 1);
+        if (isMultiplePrimaryExistingContact) {
 
             const pk_ids = primaryExistingContacts.slice(1).map(data => data.id);
             console.log(`pk_ids: ${JSON.stringify(pk_ids)}`);
@@ -94,7 +95,9 @@ export const identifyContact = async (email?: string, phoneNumber?: string) => {
         console.log(`secondaryContacts: ${JSON.stringify(secondaryContacts)}\n\n\n\n\n`);
 
         // Update existing contacts if necessary
-        if (email && !existingContacts.find(c => (c.email === email && c.linkedId === primaryContact?.id))) {
+        if (email && !existingContacts.find(c => (c.email === email && (c.linkedId === primaryContact?.id || c.id === primaryContact?.id))) && !isMultiplePrimaryExistingContact) {
+            console.log(`Step 1`);
+
             const newSecondaryContact = await prisma.contact.create({
                 data: {
                     email,
@@ -104,8 +107,10 @@ export const identifyContact = async (email?: string, phoneNumber?: string) => {
                 },
             });
             secondaryContacts.push(newSecondaryContact);
+            existingContacts.push(newSecondaryContact);
         }
-        if (phoneNumber && !existingContacts.find(c => (c.phoneNumber === phoneNumber && c.linkedId === primaryContact?.id))) {
+        if (phoneNumber && !existingContacts.find(c => (c.phoneNumber === phoneNumber && (c.linkedId === primaryContact?.id || c.id === primaryContact?.id))) && !isMultiplePrimaryExistingContact) {
+            console.log(`Step 2`);
             const newSecondaryContact = await prisma.contact.create({
                 data: {
                     email,
@@ -115,6 +120,7 @@ export const identifyContact = async (email?: string, phoneNumber?: string) => {
                 },
             });
             secondaryContacts.push(newSecondaryContact);
+            existingContacts.push(newSecondaryContact);
         }
     }
 
