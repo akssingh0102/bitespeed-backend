@@ -6,6 +6,8 @@ import notFoundHandler from './controllers/notFoundHandler';
 
 const app = express();
 app.use(express.json());
+const port = process.env.PORT || 3000;
+
 
 app.use('/identify', routes);
 app.use(notFoundHandler);
@@ -16,7 +18,7 @@ const startServer = async () => {
         await prisma.$connect();
         console.log('Database connected');
 
-        app.listen(3000, () => {
+        app.listen(port, () => {
             console.log('Server running on port 3000');
         });
     } catch (error) {
